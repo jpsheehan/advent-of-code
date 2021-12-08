@@ -80,6 +80,7 @@
   (->> filename
        (slurp)
        (parse-input-string)
+       ; we no longer filter by valid segments, all segments are valid :)
        (map get-segment-points)
 
        ; pull the points out of each segment into a flat list of points
