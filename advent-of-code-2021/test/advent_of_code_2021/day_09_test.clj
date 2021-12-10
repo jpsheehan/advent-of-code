@@ -13,5 +13,7 @@
     (is (= (get-part-one "resources/day_09_input.txt") 468))))
 
 (deftest get-part-two-test
-  (testing "Check the example for part is correct"
-    (is (= (get-part-two "resources/day_09_example.txt") 1134))))
+  (testing "Check the example for part 2 is correct"
+    (is (= (get-part-two "resources/day_09_example.txt") 1134)))
+  (testing "Check the answer for part 2 is correct"
+    (is (= (get-part-two "resources/day_09_input.txt") 1280496))))
