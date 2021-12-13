@@ -6,7 +6,7 @@
 
 (deftest parse-input-line-test
   (testing "Check that an input line is parsed"
-    (is (= (parse-input-line "start-A\n") ["start" "A"]))))
+    (is (= (parse-input-line "start-A\n") #{"start" "A"}))))
 
 (deftest is-small-cave?-test
   (testing "Check that small caves can be detected"
@@ -22,7 +22,10 @@
 
 (deftest find-paths-test
   (testing "Check the paths for the first example"
-    (is (= (find-paths example-1-edges) #{["start" "A"] ["start" "b"] ["A" "c"] ["A" "b"] ["b" "d"] ["A" "end"] ["b" "end"]}))))
+    (is (= (find-paths example-1-edges)
+           (->> (clojure.string/split-lines "start,A,b,A,c,A,end\nstart,A,b,A,end\nstart,A,b,end\nstart,A,c,A,b,A,end\nstart,A,c,A,b,end\nstart,A,c,A,end\nstart,A,end\nstart,b,A,c,A,end\nstart,b,A,end\nstart,b,end")
+                (map #(clojure.string/split % #","))
+                (set))))))
 
 (deftest get-part-one-test
   (testing "Check the answer for the first example"
