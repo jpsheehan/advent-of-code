@@ -57,4 +57,12 @@
 
 (deftest get-part-one-test
   (testing "Check the example answer for part one"
-    (is (= (get-part-one "resources/day_11_example.txt") 1656))))
+    (is (= (get-part-one "resources/day_11_example.txt") 1656)))
+  (testing "Check the real answer for part one"
+    (is (= (get-part-one "resources/day_11_input.txt") 1661))))
+
+(deftest get-part-two-test
+  (testing "Check the example answer for part two"
+    (is (= (get-part-two "resources/day_11_example.txt") 195)))
+  (testing "Check the real answer for part two"
+    (is (= (get-part-two "resources/day_11_input.txt") 334))))

@@ -51,8 +51,8 @@
                :when (needs-to-flash? (get-octopus point rows))]
            point)))
 
-(defn safely-increment-point
-  [target-point rows]
+(defn apply-fn-to-point
+  [target-point f rows]
   (let [height (count rows)
         width (count (first rows))]
     (partition width
@@ -61,8 +61,16 @@
                      :let [point [x y]
                            octopus (get-octopus point rows)]]
                  (if (= target-point point)
-                   [(inc (first octopus)) (second octopus)]
+                   (f octopus)
                    octopus)))))
+
+(defn safely-increment-point
+  [point rows]
+  (apply-fn-to-point point (fn [[energy-level flash-info]] [(inc energy-level) flash-info]) rows))
+
+(defn mark-as-flashed
+  [point rows]
+  (apply-fn-to-point point (fn [[energy-level _]] [energy-level :flash]) rows))
 
 (defn apply-flash-point
   [[x y] rows]
@@ -75,11 +83,11 @@
        (safely-increment-point [(inc x) (inc y)])
        (safely-increment-point [(inc x) (dec y)])
        (safely-increment-point [(dec x) (inc y)])
-       (safely-increment-point [(dec x) (dec y)])))
+       (safely-increment-point [(dec x) (dec y)])
+       (mark-as-flashed [x y])))
 
 (defn do-any-octopus-need-to-flash?
   [rows]
-  (println "ADASD" rows)
   (if (nil? (some needs-to-flash? (reduce concat rows)))
     false
     true))
@@ -93,13 +101,13 @@
       (let [flash-point (find-flash-point rows)]
         (if (nil? flash-point)
           rows
-          (recur (apply-flash-point flash-point rows)))))))
+          (recur (apply-flash-point flash-point (doall rows))))))))
 
 (defn reset-flashes
   "Resets any octopus that flash. Returns the new state and the number of flashes that occurred."
   [rows]
   (let [num-flashes (count (filter has-flashed? (reduce concat rows)))
-        new-rows (map (fn [row] (map reset-energy-levels row)))]
+        new-rows (map (fn [row] (map reset-energy-levels row)) rows)]
     (list num-flashes new-rows)))
 
 (defn step
@@ -121,8 +129,18 @@
          num-flashes 0]
     (if (zero? num-steps)
       num-flashes
+      (let [[this-num-flashes rows] (step rows)]
+        (recur (seq rows) (dec num-steps) (+ num-flashes this-num-flashes))))))
+
+(defn step-until-sync
+  [rows]
+  (let [num-octopus (* (count rows) (count (first rows)))]
+    (loop [rows rows
+           num-steps 1]
       (let [[num-flashes rows] (step rows)]
-        (recur rows (dec num-steps) num-flashes)))))
+        (if (= num-flashes num-octopus)
+          num-steps
+          (recur rows (inc num-steps)))))))
 
 (defn get-part-one
   [filename]
@@ -130,5 +148,12 @@
        (slurp)
        (parse-input)
        (decorate-input-with-flash-info)
-       (doall)
        (steps 100)))
+
+(defn get-part-two
+  [filename]
+  (->> filename
+       (slurp)
+       (parse-input)
+       (decorate-input-with-flash-info)
+       (step-until-sync)))
