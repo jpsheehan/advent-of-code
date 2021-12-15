@@ -1,6 +1,8 @@
 (ns advent-of-code-2021.day-14
   (:require [clojure.string :as str]))
 
+(defn pp [& args] (apply println args) (last args))
+
 (defn parse-rule-line
   [line]
   (let [[pair output] (str/split line #" -> ")]
@@ -28,20 +30,33 @@
   (for [i (range (dec (count template)))]
     (str/join (take 2 (drop i template)))))
 
-(defn expand-once
+(def enumerate (partial map-indexed list))
+
+(defn expand-once-non-memoized
   [template rules]
   (->> template
        (get-template-combos)
-       (map #(str (first %) (get rules %) (second %)))
-       (reduce str/join)))
+       (enumerate)
+       (map (fn [[i c]] (str
+                          (if (zero? i) (first c) "")
+                          (get rules c)
+                          (second c))))
+       (str/join)))
+
+(def expand-once (memoize expand-once-non-memoized))
 
 (defn expand
   [template rules steps]
   (loop [template template
          steps steps]
+    (println steps)
     (if (zero? steps)
       template
-      (recur (expand-once template rules) (dec steps)))))
+      (let [template (->> template
+                          (partition-all 100)
+                          (map #(expand-once % rules))
+                          (str/join))]
+        (recur (expand-once template rules) (dec steps)))))) ; TODO: rethink this approach
 
 (defn get-part-one
   [filename]
